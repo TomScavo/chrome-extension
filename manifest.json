@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "name": "腾讯视频 - 下一集快捷键、跳过片头片尾",
+    "description": "支持所有平台（部分功能仅支持腾讯、爱奇艺、优酷、B站）。下一集快捷键。自定义跳过片头片尾等功能",
+    "version": "4.4",
+    "permissions": [
+      "storage",
+      "tabs"
+    ],
+    "content_scripts": [{
+      "all_frames": true,
+      "js": ["content.js"],
+      "matches": [ "https://v.qq.com/*", "https://www.iqiyi.com/*", "https://www.bilibili.com/*", "https://v.youku.com/*", "https://www.youtube.com/*", "http://*/*", "https://*/*"],
+      "run_at": "document_end"
+    }],
+    "action": {
+      "default_icon": "wechat.png",
+      "default_popup": "popup.html"
+    },
+    "host_permissions": [
+      "https://v.qq.com/*"
+    ]
+}

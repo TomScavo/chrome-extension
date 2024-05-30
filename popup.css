@@ -1,0 +1,93 @@
+html,
+body {
+    height: fit-content;
+}
+
+body {
+    padding: 30px 20px;
+}
+
+#status-error,
+#status-success {
+    display: none;
+}
+
+#status-error img,
+#status-success img {
+    width: 20px;
+    height: 20px;
+    margin: 2px 5px 0 25px;
+}
+
+#status-error {
+    color: #d81e06;
+}
+
+#status-success {
+    color: #0cc718;
+}
+
+.icon-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.icon-wrapper img {
+    height: 80px;
+    margin-bottom: 20px;
+}
+
+.form-switch {
+    padding-left: 0;
+}
+
+.form-switch .form-check-input {
+    margin-left: 0;
+    width: 40px;
+    height: 20px;
+}
+
+.switch-wrapper {
+    display: flex;
+    width: max-content;
+    margin-bottom: 20px;
+}
+
+.end {
+    margin-bottom: 0;
+}
+
+.form-check-label {
+    text-align: end;
+    width: 120px;
+}
+
+/* .label {
+    margin-right: 50px;
+} */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button {  
+
+   display: none;
+
+}
+
+#reset-head,
+#reset-tail {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    margin-top: 5px;
+    margin-left: 10px;
+    border: 1px solid #868686;
+    border-radius: 50%;
+}
+
+#reset-head img,
+#reset-tail img {
+    width: 11px;
+    height: 11px;
+}
