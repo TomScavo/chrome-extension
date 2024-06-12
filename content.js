@@ -5,7 +5,8 @@ let videoEle = null;
 
 function needFullscreen() {
     const whiteList = [
-        'www.youtube.com'
+        'www.youtube.com',
+        'www.bilibili.com'
     ]
 
     return !whiteList.includes(window.location.hostname);
@@ -249,14 +250,28 @@ function handleMessage() {
     );
 }
 
+function enableIframeFullscreen() {
+    const iframeList = Array.from(document.querySelectorAll('iframe'));
+    iframeList.forEach(iframe => {
+        if (!iframe.allow || !iframe.allow.includes('fullscreen')) {
+            iframe.setAttribute('allow', `fullscreen; ${iframe.allow}`);
+            iframe.src = iframe.src;
+        }
+    })
+}
+
 function addEvent() {
     if (isYouTuBe){
         handleIsYouTube();
     }
     handleMessage();
     setInterval(() => {
+        enableIframeFullscreen();
+
         const videoElements = document.querySelectorAll('video');
-        videoEle = Array.from(videoElements).filter(node => !!node.duration)[0] || null;
+
+        const videoElementsArr = Array.from(videoElements);
+        videoEle = videoElementsArr.filter(node => !node.paused && node.duration)[0] || videoElementsArr.filter(node => !!node.duration)[0] || null;
         if (videoEle) {
             skip();
             sleep();
