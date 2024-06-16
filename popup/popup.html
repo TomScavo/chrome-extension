@@ -2,7 +2,7 @@
   <meta charset="utf-8" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
   <link href="./popup.css" rel="stylesheet">
-  <script src="popup.js" type="module" defer></script>
+  <script src="./popup/popup.js" type="module" defer></script>
 
   <body>
     <div class="form-check form-switch">
@@ -57,7 +57,7 @@
       </div>
       <div class="switch-wrapper end">
         <div class="form-check-label label" for="flexSwitchCheckDefault">片尾时长：</div>
-        <div class="d-flex">
+        <div id="end-inputs" class="d-flex">
           <div style="width: 100px; margin-right: 20px">
             <div class="input-group input-group-sm mb-3">
               <input  id="end-minute" name="endMinute" type="number" class="form-control" aria-label="Sizing example input">
@@ -73,6 +73,13 @@
           <div id="reset-tail">
             <img src="./images/reset.png">
           </div>
+        </div>
+        <div id="bind-next-btn" class="d-flex hide">
+          <img title="需要先绑定下一集按钮后，才能使用此功能" class="alert-icon" src="./images/alert.png">
+          <span>
+            <span id="click-here">点击此处</span>，绑定下一集按钮
+          </span>
+          <img class="next-icon" src="./images/next.png">
         </div>
       </div>
     </div>

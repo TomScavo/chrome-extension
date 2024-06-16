@@ -7,6 +7,30 @@ body {
     padding: 30px 20px;
 }
 
+.alert-icon {
+    width: 18px;
+    height: 18px;
+    margin-top: 3px;
+    margin-right: 3px;
+}
+
+.next-icon {
+    width: 16px;
+    height: 16px;
+    margin-left: 5px;
+    margin-top: 4px;
+}
+
+.hide {
+    display: none !important;
+}
+
+#click-here {
+    color: #1d69d5;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
 #status-error,
 #status-success {
     display: none;

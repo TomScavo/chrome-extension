@@ -9,7 +9,11 @@
     ],
     "content_scripts": [{
       "all_frames": true,
-      "js": ["content.js"],
+      "js": [
+        "content/uniqueSelector.js",
+        "content/utils.js",
+        "content/content.js"
+      ],
       "matches": [ "https://v.qq.com/*", "https://www.iqiyi.com/*", "https://www.bilibili.com/*", "https://v.youku.com/*", "https://www.youtube.com/*", "http://*/*", "https://*/*"],
       "run_at": "document_end"
     }],

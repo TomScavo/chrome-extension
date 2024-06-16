@@ -257,8 +257,6 @@ function popup() {
             }
         }   
     });
-
-
 }
 
 function init() {
