@@ -19,7 +19,7 @@
     }],
     "action": {
       "default_icon": "wechat.png",
-      "default_popup": "popup.html"
+      "default_popup": "popup/popup.html"
     },
     "host_permissions": [
       "https://v.qq.com/*"
