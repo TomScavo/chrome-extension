@@ -1,3 +1,7 @@
+import initSetting from './utils/initSetting.js';
+import initNextShortcut from './utils/initNextShortcut.js';
+import { setCurrentWebsiteData, getHostName, setValue } from './utils/index.js';
+
 const checkboxEle = document.querySelector('#skip-checkbox');
 const startMinuteEle = document.querySelector('#start-minute');
 const startSecondEle = document.querySelector('#start-second');
@@ -18,9 +22,14 @@ const speedUpSelectorEle = document.querySelector('#speed-selector');
 const speedUpCheckboxEle = document.querySelector('#speed-checkbox');
 const resetHeadEle = document.querySelector('#reset-head');
 const resetTailEle = document.querySelector('#reset-tail');
-const clickHereEle = document.querySelector('#click-here');
+const clickHereElements = document.querySelectorAll('.click-here');
+const clickHereEle1 = document.querySelector('#click-here1');
 const endInputsEle = document.querySelector('#end-inputs');
-const bindNextBtnEle = document.querySelector('#bind-next-btn');
+const bindNextBtnElements = document.querySelectorAll('.bind-next-btn');
+const rebindNextBtnEle = document.querySelector('#rebind-next-btn');
+const unbindTextEle = document.querySelector('#unbind-text');
+const bindTextEle = document.querySelector('#bind-text');
+const nextShortcutCheckboxWrapperEle = document.querySelector('#next-shortcut-checkbox-wrapper');
 
 let currentTime = 0;
 let duration = 0;
@@ -52,10 +61,6 @@ function getMinuteAndSecond(time) {
         minute: Math.floor(time / 60),
         second: Math.floor(time) % 60
     }
-}
-
-function setValue(name, value) {
-    chrome.storage.local.set({ [name]: value });
 }
 
 function handleStartTimeChange() {
@@ -168,15 +173,19 @@ async function initSpeedUpForm() {
     speedUpSelectorEle.onchange = (e) => setValue('speed', Number(e.target.value));
 }
 
-function initClickHere() {
-    clickHereEle.onclick = () => {
-        chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
-            var activeTab = tabs[0];
-            chrome.tabs.sendMessage(activeTab.id, {message: "selectNextBtn"});
-        });
+function bindNextBtn() {
+    chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
+        var activeTab = tabs[0];
+        chrome.tabs.sendMessage(activeTab.id, {message: "selectNextBtn"});
+    });
 
-        window.close();
-    }
+    window.close();
+}
+
+function initClickHere() {
+    Array.from(clickHereElements).forEach(ele => ele.onclick = bindNextBtn);
+    clickHereEle1.onclick = bindNextBtn;
+    rebindNextBtnEle.onclick = bindNextBtn;
 }
 
 function setVideoStatus(data) {
@@ -189,26 +198,38 @@ function setVideoStatus(data) {
     }
 }
 
-function getHostName(url) {
-    if (!url) return '';
-    url = new URL(url);
-    return url.hostname;
-}
-
 function checkNextBtnInfo() {
     chrome.tabs.query({currentWindow: true, active: true}, async function (tabs){
         const activeTab = tabs[0];
         const { data = {} } = await chrome.storage.local.get(["data"]);
         const hostName = getHostName(activeTab.url);
         const websiteData = data[hostName] || {};
-        if (websiteData.nextBtn || whiteList.includes(hostName)) {
+
+        if (
+            websiteData.nextBtn
+            || (whiteList.includes(hostName) && !'nextBtn' in websiteData)
+            || websiteData.isAutoNext
+        ) {
             endInputsEle.classList.remove("hide");
-            bindNextBtnEle.classList.add("hide");
+            nextShortcutCheckboxWrapperEle.classList.remove("hide");
+            Array.from(bindNextBtnElements).forEach(ele => ele.classList.add("hide"));
         } else {
             endInputsEle.classList.add("hide");
-            bindNextBtnEle.classList.remove("hide");
+            nextShortcutCheckboxWrapperEle.classList.add("hide");
+            Array.from(bindNextBtnElements).forEach(ele => ele.classList.remove("hide"));
         }
-    }); 
+
+        if (
+            websiteData.nextBtn
+            || (whiteList.includes(hostName) && !'nextBtn' in websiteData)
+        ) {
+            unbindTextEle.classList.add("hide");
+            bindTextEle.classList.remove("hide");
+        } else {
+            unbindTextEle.classList.remove("hide");
+            bindTextEle.classList.add("hide");
+        }
+    });
 }
 
 function popup() {
@@ -246,14 +267,18 @@ function popup() {
     chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
         const activeTab = tabs[0];
         const imageEle = document.querySelector('#icon');
+        const favIconEle = document.querySelector('#fav-icon');
         const url = new URL(activeTab.url);
         const imageSrc = getImgSrc(url.hostname);
+        setValue('url', activeTab.url);
 
         if (imageEle) {
             if (imageSrc) {
                 imageEle.src = imageSrc;
+                favIconEle.src = imageSrc;
             } else if (activeTab.favIconUrl) {
                 imageEle.src = activeTab.favIconUrl;
+                favIconEle.src = activeTab.favIconUrl;
             }
         }   
     });
@@ -265,10 +290,12 @@ function init() {
     });
 
     initSkipForm();
+    initNextShortcut();
     initSleepForm();
     initFastForwardForm();
     initSpeedUpForm();
     initClickHere();
+    initSetting();
     // initLoopForm();
 }
 

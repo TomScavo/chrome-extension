@@ -2,154 +2,212 @@
   <meta charset="utf-8" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
   <link href="./popup.css" rel="stylesheet">
-  <script src="./popup.js" type="module" defer></script>
+
+  <script src="popup.js" type="module" defer></script>
 
   <body>
-    <div class="form-check form-switch">
-      <div class="icon-wrapper">
-        <img id="icon"></img>
-      </div>
-      <div class="switch-wrapper">
-        <div class="form-check-label label" for="checkbox">跳过片头片尾：</div>
-        <input class="form-check-input" type="checkbox" id="skip-checkbox">
-        <div id="status-error">
-          <img id="status-icon" src="./images/error.png">
-          <div id="status-message">未检测到视频</div>
-        </div>
-        <div id="status-success">
-          <img src="./images/success.png">
-          <div id="status-message">已检测到视频</div>
-        </div>
-      </div>
-      <div class="switch-wrapper">
-        <div class="form-check-label label" for="checkbox">当前播放进度：</div>
-        <div class="d-flex">
-          <div id="progress" style="width: 55px; margin-right: 10px">
-            00:00
-          </div>
-          <div style="width: 80px; margin-top: -5px;">
-            <button id="set-start" type="button" class="btn btn-primary btn-sm">设为片头</button>
-          </div>
-          <div style="width: 80px; margin-top: -5px;">
-            <button  id="set-end" type="button" class="btn btn-primary btn-sm">设为片尾</button>
+    <div class="home-wrapper">
+      <div class="form-check form-switch">
+        <div class="icon-wrapper">
+          <div class="icon-container">
+            <img id="icon">
           </div>
         </div>
-      </div>
-      <div class="switch-wrapper">
-        <div class="form-check-label label">片头时长：</div>
-        <div class="d-flex">
-          <div style="width: 100px; margin-right: 20px">
-            <div class="input-group input-group-sm mb-3">
-              <input id="start-minute" name="startMinute" type="number" class="form-control" aria-label="Sizing example input">
-              <span class="input-group-text">分</span>
+
+        <img id="setting-icon" src="images/setting.png">
+        
+        <div class="switch-wrapper">
+          <div class="form-check-label label" for="checkbox">跳过片头片尾：</div>
+          <input class="form-check-input" type="checkbox" id="skip-checkbox">
+          <div id="status-error">
+            <img id="status-icon" src="./images/error.png">
+            <div id="status-message">未检测到视频</div>
+          </div>
+          <div id="status-success">
+            <img src="./images/success.png">
+            <div id="status-message">已检测到视频</div>
+          </div>
+        </div>
+        <div class="switch-wrapper">
+          <div class="form-check-label label" for="checkbox">当前播放进度：</div>
+          <div class="d-flex">
+            <div id="progress" style="width: 55px; margin-right: 10px">
+              00:00
+            </div>
+            <div style="width: 80px; margin-top: -5px;">
+              <button id="set-start" type="button" class="btn btn-primary btn-sm">设为片头</button>
+            </div>
+            <div style="width: 80px; margin-top: -5px;">
+              <button  id="set-end" type="button" class="btn btn-primary btn-sm">设为片尾</button>
             </div>
           </div>
-          <div style="width: 100px;">
-            <div class="input-group input-group-sm mb-3">
-              <input id="start-second" name="startSecond" type="number" class="form-control" aria-label="Sizing example input">
+        </div>
+        <div class="switch-wrapper">
+          <div class="form-check-label label">片头时长：</div>
+          <div class="d-flex">
+            <div style="width: 100px; margin-right: 20px">
+              <div class="input-group input-group-sm mb-3">
+                <input id="start-minute" name="startMinute" type="number" class="form-control" aria-label="Sizing example input">
+                <span class="input-group-text">分</span>
+              </div>
+            </div>
+            <div style="width: 100px;">
+              <div class="input-group input-group-sm mb-3">
+                <input id="start-second" name="startSecond" type="number" class="form-control" aria-label="Sizing example input">
+                <span class="input-group-text">秒</span>
+              </div>
+            </div>
+            <div id="reset-head">
+              <img src="./images/reset.png">
+            </div>
+          </div>
+        </div>
+        <div class="switch-wrapper end">
+          <div class="form-check-label label" for="flexSwitchCheckDefault">片尾时长：</div>
+          <div id="end-inputs" class="d-flex">
+            <div style="width: 100px; margin-right: 20px">
+              <div class="input-group input-group-sm mb-3">
+                <input  id="end-minute" name="endMinute" type="number" class="form-control" aria-label="Sizing example input">
+                <span class="input-group-text">分</span>
+              </div>
+            </div>
+            <div style="width: 100px;">
+              <div class="input-group input-group-sm mb-3">
+                <input id="end-second" name="endSecond" type="number" class="form-control" aria-label="Sizing example input">
+                <span class="input-group-text">秒</span>
+              </div>
+            </div>
+            <div id="reset-tail">
+              <img src="./images/reset.png">
+            </div>
+          </div>
+          <div class="bind-next-btn d-flex hide">
+            <img title="需要先绑定下一集按钮后，才能使用此功能" class="alert-icon" src="./images/alert.png">
+            <span>
+              <span class="click-here">点击此处</span>，绑定下一集按钮
+            </span>
+            <img class="next-icon" src="./images/next.png">
+          </div>
+        </div>
+      </div>
+
+      <hr/>
+
+      <div class="form-check form-switch">
+        <div class="switch-wrapper" style="height: 31px;">
+          <div class="form-check-label label" for="checkbox">下一集快捷键：</div>
+
+          <div id="next-shortcut-checkbox-wrapper">
+            <input id="next-shortcut-checkbox" class="form-check-input" type="checkbox">
+            <div id="shortcut" style="width: 100px; margin-left: 25px"></div>
+          </div>
+
+          <div class="bind-next-btn d-flex hide">
+            <img title="需要先绑定下一集按钮后，才能使用此功能" class="alert-icon" src="./images/alert.png">
+            <span>
+              <span class="click-here">点击此处</span>，绑定下一集按钮
+            </span>
+            <img class="next-icon" src="./images/next.png">
+          </div>
+        </div>
+      </div>
+
+      <hr/>
+
+      <div class="form-check form-switch">
+        <div class="switch-wrapper">
+          <div class="form-check-label label" for="checkbox">睡眠定时：</div>
+          <input id="sleep-checkbox" class="form-check-input" type="checkbox">
+          <select  id="sleep-selector" class="form-select form-select-sm" style="width: 100px; margin: 0 20px;" aria-label="Default select example">
+            <option selected value="10">10分钟</option>
+            <option selected value="20">20分钟</option>
+            <option selected value="30">30分钟</option>
+            <option selected value="45">45分钟</option>
+            <option value="60">60分钟</option>
+            <option value="90">90分钟</option>
+            <option value="120">120分钟</option>
+          </select>
+          <div id="sleep-timer" style="width: 55px; margin-right: 10px; line-height: 30px"></div>
+        </div>
+      </div>
+
+      <hr/>
+
+      <div class="form-check form-switch">
+        <div class="switch-wrapper" style="height: 31px;">
+          <div class="form-check-label label" for="checkbox">单次快进时长：</div>
+          <input id="fast-forward-checkbox" class="form-check-input" type="checkbox">
+          <div style="width: 100px; margin-right: 20px">
+            <div style="margin-left: 20px; height: 30px" class="input-group input-group-sm mb-3">
+              <input id="fast-forward-second" style="height: 30px" name="endMinute" type="number" class="form-control" aria-label="Sizing example input">
               <span class="input-group-text">秒</span>
             </div>
           </div>
-          <div id="reset-head">
-            <img src="./images/reset.png">
-          </div>
         </div>
       </div>
-      <div class="switch-wrapper end">
-        <div class="form-check-label label" for="flexSwitchCheckDefault">片尾时长：</div>
-        <div id="end-inputs" class="d-flex">
-          <div style="width: 100px; margin-right: 20px">
-            <div class="input-group input-group-sm mb-3">
-              <input  id="end-minute" name="endMinute" type="number" class="form-control" aria-label="Sizing example input">
-              <span class="input-group-text">分</span>
-            </div>
-          </div>
-          <div style="width: 100px;">
-            <div class="input-group input-group-sm mb-3">
-              <input id="end-second" name="endSecond" type="number" class="form-control" aria-label="Sizing example input">
-              <span class="input-group-text">秒</span>
-            </div>
-          </div>
-          <div id="reset-tail">
-            <img src="./images/reset.png">
-          </div>
-        </div>
-        <div id="bind-next-btn" class="d-flex hide">
-          <img title="需要先绑定下一集按钮后，才能使用此功能" class="alert-icon" src="./images/alert.png">
-          <span>
-            <span id="click-here">点击此处</span>，绑定下一集按钮
-          </span>
-          <img class="next-icon" src="./images/next.png">
+
+      <hr/>
+
+      <div class="form-check form-switch">
+        <div class="switch-wrapper">
+          <div class="form-check-label label" for="checkbox">播放速度：</div>
+          <input id="speed-checkbox" class="form-check-input" type="checkbox">
+          <select  id="speed-selector" class="form-select form-select-sm" style="width: 100px; margin: 0 20px;" aria-label="Default select example">
+            <option selected value="0.25">0.25</option>
+            <option selected value="0.5">0.5</option>
+            <option selected value="0.75">0.75</option>
+            <option selected value="1">正常</option>
+            <option selected value="1.25">1.25</option>
+            <option selected value="1.5">1.5</option>
+            <option selected value="1.75">1.75</option>
+            <option selected value="2">2</option>
+            <option selected value="2.5">2.5</option>
+            <option selected value="3">3</option>
+            <option selected value="5">5</option>
+            <option selected value="16">16</option>
+          </select>
         </div>
       </div>
     </div>
 
-    <hr/>
+    <div class="setting-wrapper hide">
+      <img id="fav-icon">
+      <img id="close-icon" src="images/close.png">
 
-    <div class="form-check form-switch">
-      <div class="switch-wrapper">
-        <div class="form-check-label label" for="checkbox">睡眠定时：</div>
-        <input id="sleep-checkbox" class="form-check-input" type="checkbox">
-        <select  id="sleep-selector" class="form-select form-select-sm" style="width: 100px; margin: 0 20px;" aria-label="Default select example">
-          <option selected value="10">10分钟</option>
-          <option selected value="20">20分钟</option>
-          <option selected value="30">30分钟</option>
-          <option selected value="45">45分钟</option>
-          <option value="60">60分钟</option>
-          <option value="90">90分钟</option>
-          <option value="120">120分钟</option>
-        </select>
-        <div id="sleep-timer" style="width: 55px; margin-right: 10px; line-height: 30px"></div>
-      </div>
-    </div>
+      <h4 class="text-center">
+        设置
+      </h4>
 
-    <hr/>
+      <div class="text-center">仅对当前网站有效</div>
 
-    <div class="form-check form-switch">
-      <div class="switch-wrapper" style="height: 31px;">
-        <div class="form-check-label label" for="checkbox">单次快进时长：</div>
-        <input id="fast-forward-checkbox" class="form-check-input" type="checkbox">
-        <div style="width: 100px; margin-right: 20px">
-          <div style="margin-left: 20px; height: 30px" class="input-group input-group-sm mb-3">
-            <input id="fast-forward-second" style="height: 30px" name="endMinute" type="number" class="form-control" aria-label="Sizing example input">
-            <span class="input-group-text">秒</span>
+      <hr />
+
+      <div>
+        <div style="white-space: nowrap; font-weight: bold;">绑定下一集按钮：</div>
+
+        <div class="bind-radios-wrapper">
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="nextRadios" id="exampleRadios1" value="manual" checked>
+            <label for="exampleRadios1">
+              手动绑定
+              <span id="unbind-text">
+                （推荐，<span id="click-here1" class="link">点击此处</span> 进行绑定）
+              </span>
+            </label>
+            <span id="bind-text" class="hide">
+              （已绑定）
+              <span id="rebind-next-btn" class="link" style="margin-left: 50px;">重新绑定</span>
+              <span id="delete-next-btn" class="text-danger" style="cursor: pointer; margin-left: 10px">删除</span>
+            </span>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="nextRadios" id="exampleRadios2" value="auto">
+            <label for="exampleRadios2" style="white-space: nowrap;">
+              自动绑定（有概率失败，如不生效请解除绑定）
+            </label>
           </div>
         </div>
       </div>
     </div>
-
-    <hr/>
-
-    <div class="form-check form-switch">
-      <div class="switch-wrapper">
-        <div class="form-check-label label" for="checkbox">播放速度：</div>
-        <input id="speed-checkbox" class="form-check-input" type="checkbox">
-        <select  id="speed-selector" class="form-select form-select-sm" style="width: 100px; margin: 0 20px;" aria-label="Default select example">
-          <option selected value="0.25">0.25</option>
-          <option selected value="0.5">0.5</option>
-          <option selected value="0.75">0.75</option>
-          <option selected value="1">正常</option>
-          <option selected value="1.25">1.25</option>
-          <option selected value="1.5">1.5</option>
-          <option selected value="1.75">1.75</option>
-          <option selected value="2">2</option>
-          <option selected value="2.5">2.5</option>
-          <option selected value="3">3</option>
-          <option selected value="5">5</option>
-          <option selected value="16">16</option>
-        </select>
-        <div id="sleep-timer" style="width: 55px; margin-right: 10px; line-height: 30px"></div>
-      </div>
-    </div>
-
-
-    <!-- <hr/> -->
-
-    <!-- <div class="form-check form-switch">
-      <div class="switch-wrapper">
-        <div class="form-check-label label" for="checkbox">循环播放：</div>
-        <input id="loop-checkbox" class="form-check-input" type="checkbox">
-      </div>
-    </div> -->
   </body>
 </html>

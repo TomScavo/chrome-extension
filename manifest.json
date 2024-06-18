@@ -18,7 +18,7 @@
       "run_at": "document_end"
     }],
     "action": {
-      "default_icon": "wechat.png",
+      "default_icon": "popup/images/wechat.png",
       "default_popup": "popup/popup.html"
     },
     "host_permissions": [
