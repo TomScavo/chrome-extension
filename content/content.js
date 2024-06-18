@@ -30,7 +30,7 @@ async function getNextBtnEle() {
     const hostName = await getHostName();
 
     return document.querySelector(
-        (!'nextBtn' in currentWebsiteData && classNames[hostName])
+        !('nextBtn' in currentWebsiteData) && classNames[hostName])
         || currentWebsiteData.nextBtn || null
     );
 }

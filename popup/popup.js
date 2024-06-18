@@ -195,7 +195,7 @@ function checkNextBtnInfo() {
 
         if (
             websiteData.nextBtn
-            || (whiteList.includes(hostName) && !'nextBtn' in websiteData)
+            || (whiteList.includes(hostName) && !('nextBtn' in websiteData))
             || websiteData.isAutoNext
         ) {
             endInputsEle.classList.remove("hide");
@@ -209,7 +209,7 @@ function checkNextBtnInfo() {
 
         if (
             websiteData.nextBtn
-            || (whiteList.includes(hostName) && !'nextBtn' in websiteData)
+            || (whiteList.includes(hostName) && !('nextBtn' in websiteData))
         ) {
             unbindTextEle.classList.add("hide");
             bindTextEle.classList.remove("hide");
