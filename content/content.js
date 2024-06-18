@@ -244,9 +244,10 @@ async function speedUp() {
     }
 }
 
-function fullscreen(e) {
+async function fullscreen(e) {
     if (e.keyCode === 70 && !isInput(e) && needFullscreen()) {
-        const fullscreenEle = getFullscreenBtnEle();
+        const fullscreenEle = await getFullscreenBtnEle();
+
         if (fullscreenEle) {
             fullscreenEle.click();
         } else {
