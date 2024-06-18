@@ -1,6 +1,7 @@
 import initSetting from './utils/initSetting.js';
+import initSaveVideo, { resetVideoList } from './utils/initSaveVideo.js';
 import initNextShortcut from './utils/initNextShortcut.js';
-import { setCurrentWebsiteData, getHostName, setValue } from './utils/index.js';
+import { setCurrentWebsiteData, getHostName, setValue, getMinuteAndSecond, setStartTime, setEndTime } from './utils/index.js';
 
 const checkboxEle = document.querySelector('#skip-checkbox');
 const startMinuteEle = document.querySelector('#start-minute');
@@ -56,37 +57,18 @@ function getImgSrc(hostname) {
 }
 
 
-function getMinuteAndSecond(time) {
-    return {
-        minute: Math.floor(time / 60),
-        second: Math.floor(time) % 60
-    }
-}
-
 function handleStartTimeChange() {
     const startMinute = parseInt(startMinuteEle.value || '0');
     const startSecond = parseInt(startSecondEle.value || '0');
+    resetVideoList();
     setValue('startTime', startMinute * 60 + startSecond);
 }
 
 function handleEndTimeChange() {
     const endMinute = parseInt(endMinuteEle.value || '0');
     const endSecond = parseInt(endSecondEle.value || '0');
+    resetVideoList();
     setValue('endTime',  endMinute * 60 + endSecond);
-}
-
-function handleClickStartBtn() {
-    const { minute, second } = getMinuteAndSecond(currentTime);
-    startMinuteEle.value = `${minute}`;
-    startSecondEle.value = `${second}`;
-    setValue('startTime', currentTime);
-}
-
-function handleClickEndBtn() {
-    const { minute, second} = getMinuteAndSecond(duration - currentTime);
-    endMinuteEle.value = `${minute}`;
-    endSecondEle.value = `${second}`;
-    setValue('endTime', duration - currentTime);
 }
 
 function handleSleepCheckboxChange(e) {
@@ -131,8 +113,14 @@ async function initSkipForm() {
     startSecondEle.oninput = handleStartTimeChange;
     endMinuteEle.oninput = handleEndTimeChange;
     endSecondEle.oninput = handleEndTimeChange;
-    setStartBtn.onclick = handleClickStartBtn;
-    setEndBtn.onclick = handleClickEndBtn;
+    setStartBtn.onclick = () => {
+        resetVideoList();
+        setStartTime(currentTime)
+    };
+    setEndBtn.onclick = () => {
+        resetVideoList();
+        setEndTime(duration - currentTime);
+    }
     resetHeadEle.onclick = resetHead;
     resetTailEle.onclick = resetTail;
 }
@@ -296,6 +284,7 @@ function init() {
     initSpeedUpForm();
     initClickHere();
     initSetting();
+    initSaveVideo();
     // initLoopForm();
 }
 
