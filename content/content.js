@@ -245,6 +245,8 @@ async function speedUp() {
 }
 
 async function fullscreen(e) {
+    if (isYouTuBe) return;
+
     if (e.keyCode === 70 && !isInput(e) && needFullscreen()) {
         const fullscreenEle = await getFullscreenBtnEle();
 
