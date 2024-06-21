@@ -226,7 +226,7 @@ function popup() {
             var activeTab = tabs[0];
             chrome.tabs.sendMessage(activeTab.id, {message: "currentTime"}, (data) => {
                 setVideoStatus(data);
-                if (!data) return;
+                if (!data || typeof data !== 'object' ) return;
                 currentTime = Math.floor(data.currentTime);
                 duration = Math.floor(data.duration);
                 const { minute, second } = getMinuteAndSecond(currentTime);

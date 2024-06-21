@@ -27,7 +27,6 @@ export async function setCurrentWebsiteData(hostName, newValues) {
             setValue('data', newData);
         }
     } catch (e) {
-        console.log('parse error');
     }
 }
 

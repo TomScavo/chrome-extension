@@ -67,13 +67,14 @@ async function getFullscreenBtnEle() {
 
 async function autoNext() {
     if (isIframe()) {
-        window.top.postMessage("chromeExtensionAutoNextVideo", "*");
+        const origin = await getOrigin();
+        window.top.postMessage("chromeExtensionAutoNextVideo", origin);
         return;
     }
 
     const url = await getURL();
 
-    const lastNumStr = url.split('/').filter(Boolean).at(-1).split(/[-\._]/).filter(i => !!Number(i)).at(-1);
+    const lastNumStr = url.split('/').filter(Boolean).at(-1).split(/[-\._]/).filter(Boolean).filter(i => !!Number(i)).at(-1);
 
     if (lastNumStr) {
         const index = url.lastIndexOf(lastNumStr);
@@ -132,7 +133,6 @@ async function handleTimeupdateEvent() {
             }, 10000);
         }
     } catch(e) {
-        console.log('error', e)
     }
 }
 
@@ -245,7 +245,8 @@ async function speedUp() {
 }
 
 async function fullscreen(e) {
-    if (e.keyCode === 70 && !isInput(e) && needFullscreen()) {
+    const shouldFullscreen = await needFullscreen();
+    if (e.keyCode === 70 && !isInput(e) && shouldFullscreen) {
         e.stopImmediatePropagation();
         const fullscreenEle = await getFullscreenBtnEle();
 
@@ -266,11 +267,19 @@ function addFullscreenShortcut() {
     window.addEventListener('keydown',fullscreen, true);
 }
 
+async function getOrigin() {
+    let url = await getURL();
+    url  = new URL(url);
+    return url.origin;
+}
+
 async function iframeSendNextCommand() {
     const currentWebsiteData = await getCurrentWebsiteData();
 
     if (!nextBtnEle && currentWebsiteData.nextBtn && isIframe()) {
-        window.parent.postMessage("chromeExtensionTriggerNextBtn", "*");
+        const origin = await getOrigin();
+
+        window.top.postMessage("chromeExtensionTriggerNextBtn", origin);
     }
 }
 
@@ -292,7 +301,9 @@ async function handleNextShortcut(e) {
         return;
     }
 
-    iframeSendNextCommand();
+    if (e.key === 'Alt' && !isAutoNext && !nextBtnEle) {
+        iframeSendNextCommand();
+    }
 }
 
 async function clickNextBtn() {
@@ -320,26 +331,6 @@ function findValidElement(element) {
     return element;
 }
 
-async function getHostName() {
-    if (isIframe()) {
-        let url = await getURL();
-        if (!url) return '';
-        url = new URL(url);
-        return url.hostname;
-    } else {
-        return window.location.hostname;
-    }
-}
-
-async function getURL() {
-    if (isIframe()) {
-        const { url = '' } = (await chrome.storage.local.get(["url"])) || {};
-        return url;
-    }
-
-    return window.location.href;
-}
-
 async function setCurrentWebsiteData(newValues) {
     try {
         const { data = {} } = await chrome.storage.local.get(["data"]);
@@ -357,7 +348,6 @@ async function setCurrentWebsiteData(newValues) {
             setValue('data', newData);
         }
     } catch (e) {
-        console.log('parse error');
     }
 }
 
@@ -389,10 +379,11 @@ function addNextBtnMousedown(e) {
 
     mousedownTimestamp = Date.now();
 
-    mousedownTimeout = setTimeout(() => {
+    mousedownTimeout = setTimeout(async () => {
         saveNextBtnInfo(e);
         if (isIframe) {
-            window.parent.postMessage("chromeExtensionSuccessSaveNextBtn", "*");
+            const origin = await getOrigin();
+            window.top.postMessage("chromeExtensionSuccessSaveNextBtn", origin);
         } else {
             successSaveNextBtn();
         }
@@ -416,10 +407,6 @@ function removeAlertEle() {
     alertEle && alertEle.remove();
     isAddNextBtn = false;
     removeAddNextBtnEventListener();
-}
-
-function isIframe() {
-    return window != window.top;
 }
 
 function addIframeMessageEventListener () {
@@ -449,12 +436,11 @@ function handleMessage() {
     chrome.runtime.onMessage.addListener(
         function(request, sender, sendResponse) {
             if (request.message === "currentTime") {
-                if(!videoEle) return '';
+                if(!videoEle) return true;
                 sendResponse({
                     currentTime: videoEle.currentTime,
                     duration: videoEle.duration
                 });
-                return '';
             }
 
             if (request.message === "stopSpeedUp" && videoEle) {
@@ -463,7 +449,7 @@ function handleMessage() {
 
             if (request.message === "selectNextBtn") {
                 const isAlertEleExist = document.querySelector('#chrome-extension-tencent-video');
-                if (isAlertEleExist) return '';
+                if (isAlertEleExist) return true;
 
                 isAddNextBtn = true;
                 if (!isIframe()) {
@@ -497,7 +483,7 @@ function handleMessage() {
                 window.addEventListener('mousedown', addNextBtnMousedown, true);
                 window.addEventListener('mouseup', addNextBtnMouseup, true);
             }
-            return '';
+           return true;
         }
     );
 }
@@ -524,12 +510,12 @@ function addEvent() {
     }
     handleMessage();
     setInterval(() => {
+        setUrl();
         const videoElements = document.querySelectorAll('video');
 
         const videoElementsArr = Array.from(videoElements);
         videoEle = videoElementsArr.filter(node => !node.paused && node.duration)[0] || videoElementsArr.filter(node => !!node.duration)[0] || null;
         if (videoEle) {
-            setUrl();
             skip();
             sleep();
             fastForward();
