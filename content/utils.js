@@ -1,8 +1,9 @@
-function needFullscreen() {
+async function needFullscreen() {
     const whiteList = [
-        'www.youtube.com',
         'www.bilibili.com'
     ]
 
-    return !whiteList.includes(getHostName());
+    const hostName = await getHostName();
+
+    return !whiteList.includes(hostName);
 }
