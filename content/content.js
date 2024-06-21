@@ -9,6 +9,10 @@ let nextBtnEle = null;
 let isExecutingNext = false;
 let isExecutingTimeupdate = false;
 
+function isYouTuBeShorts() {
+    return window.location.href.includes('www.youtube.com/shorts');
+}
+
 async function getCurrentWebsiteData() {
     const { data = {} } = await chrome.storage.local.get(["data"]);
     
@@ -245,7 +249,8 @@ async function speedUp() {
 }
 
 async function fullscreen(e) {
-    if (isYouTuBe) return;
+    console.log('isYouTuBeShorts', isYouTuBeShorts, window.location.hostname)
+    if (isYouTuBe && !isYouTuBeShorts()) return;
 
     if (e.keyCode === 70 && !isInput(e) && needFullscreen()) {
         const fullscreenEle = await getFullscreenBtnEle();
