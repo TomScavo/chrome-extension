@@ -429,7 +429,7 @@ function addIframeMessageEventListener () {
 
 function autoSelect() {
     setCurrentWebsiteData({isAutoNext: true});
-    successSaveNextBtn('自动绑定成功，如不生效、出现异常，可在设置中解除绑定。');
+    successSaveNextBtn('自动绑定成功，如不生效、或出现异常，可在设置中解除绑定。');
 }
 
 function handleMessage() {
