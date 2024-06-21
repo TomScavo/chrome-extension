@@ -9,10 +9,6 @@ let nextBtnEle = null;
 let isExecutingNext = false;
 let isExecutingTimeupdate = false;
 
-function isYouTuBeShorts() {
-    return window.location.href.includes('www.youtube.com/shorts');
-}
-
 async function getCurrentWebsiteData() {
     const { data = {} } = await chrome.storage.local.get(["data"]);
     
@@ -249,10 +245,8 @@ async function speedUp() {
 }
 
 async function fullscreen(e) {
-    console.log('isYouTuBeShorts', isYouTuBeShorts, window.location.hostname)
-    if (isYouTuBe && !isYouTuBeShorts()) return;
-
     if (e.keyCode === 70 && !isInput(e) && needFullscreen()) {
+        e.stopImmediatePropagation();
         const fullscreenEle = await getFullscreenBtnEle();
 
         if (fullscreenEle) {
@@ -268,8 +262,8 @@ async function fullscreen(e) {
 }
 
 function addFullscreenShortcut() {
-    window.removeEventListener('keydown', fullscreen);
-    window.addEventListener('keydown',fullscreen);
+    window.removeEventListener('keydown', fullscreen, true);
+    window.addEventListener('keydown',fullscreen, true);
 }
 
 async function iframeSendNextCommand() {
@@ -518,6 +512,12 @@ function enableIframeFullscreen() {
     })
 }
 
+function setUrl() {
+    if (!isIframe()) {
+        setValue('url', window.location.href);
+    }
+}
+
 function addEvent() {
     if (isYouTuBe){
         handleIsYouTube();
@@ -529,6 +529,7 @@ function addEvent() {
         const videoElementsArr = Array.from(videoElements);
         videoEle = videoElementsArr.filter(node => !node.paused && node.duration)[0] || videoElementsArr.filter(node => !!node.duration)[0] || null;
         if (videoEle) {
+            setUrl();
             skip();
             sleep();
             fastForward();

@@ -258,7 +258,6 @@ function popup() {
         const favIconEle = document.querySelector('#fav-icon');
         const url = new URL(activeTab.url);
         const imageSrc = getImgSrc(url.hostname);
-        setValue('url', activeTab.url);
 
         if (imageEle) {
             if (imageSrc) {
