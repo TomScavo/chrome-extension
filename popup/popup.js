@@ -91,12 +91,14 @@ function resetHead() {
     startMinuteEle.value = '0';
     startSecondEle.value = '0';
     setValue('startTime', 0);
+    resetVideoList();
 }
 
 function resetTail() {
     endMinuteEle.value = '0';
     endSecondEle.value = '0';
     setValue('endTime', 0);
+    resetVideoList();
 }
 
 async function initSkipForm() {
