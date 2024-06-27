@@ -132,8 +132,7 @@ async function handleTimeupdateEvent() {
                 isExecutingNext = false;
             }, 10000);
         }
-    } catch(e) {
-    }
+    } catch(e) {}
 }
 
 async function skip() {
