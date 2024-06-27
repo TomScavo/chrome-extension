@@ -7,7 +7,7 @@ function isMac() {
     return navigator.userAgent.includes("Mac");
 }
 
-function handleSleepCheckboxChange(e) {
+function handleNextCheckboxChange(e) {
     setValue('isNextShortcut', e.currentTarget.checked);
 }
 
@@ -15,6 +15,6 @@ export default async function initNextShortcut() {
     const { isNextShortcut = true } = await chrome.storage.local.get(["isNextShortcut"]);
 
     nextShortcutCheckboxEle.checked = isNextShortcut;
-    nextShortcutCheckboxEle.onchange = handleSleepCheckboxChange;
+    nextShortcutCheckboxEle.onchange = handleNextCheckboxChange;
     nextShortcutEle.innerHTML = isMac() ? 'option' : 'Alt'
 }
