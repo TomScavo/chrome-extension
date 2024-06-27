@@ -33,7 +33,6 @@ export async function setCurrentWebsiteData(hostName, newValues) {
 export async function getCurrentWebsiteData(hostName) {
     const { data = {} } = await chrome.storage.local.get(["data"]);
 
-
     return data[hostName] || {};
 }
 
