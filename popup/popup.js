@@ -72,7 +72,6 @@ function handleEndTimeChange() {
 }
 
 function handleSleepCheckboxChange(e) {
-
     if (!e.currentTarget.checked) {
         sleepTimerEle.innerHTML = '';
     }
@@ -284,9 +283,8 @@ function init() {
     initFastForwardForm();
     initSpeedUpForm();
     initClickHere();
-    initSetting();
     initSaveVideo();
-    // initLoopForm();
+    initSetting();
 }
 
 init();

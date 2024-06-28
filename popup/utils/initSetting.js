@@ -1,4 +1,5 @@
 import initBindNextBtn from './initBindNextBtn.js';
+import initBindFullscreenBtn from './initBindFullscreenBtn.js';
 
 const homeWrapperEle = document.querySelector('.home-wrapper');
 const settingWrapperEle = document.querySelector('.setting-wrapper');
@@ -20,4 +21,5 @@ export default function initSetting() {
     closeIconEle.onclick = handleCloseIconClicked;
     
     initBindNextBtn();
+    initBindFullscreenBtn();
 }

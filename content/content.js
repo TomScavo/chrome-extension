@@ -2,14 +2,15 @@ const isYouTuBe = window.location.hostname === 'www.youtube.com';
 
 let intervalId = null;
 let videoEle = null;
-let isAddNextBtn = false;
+let isBindNextBtn = false;
+let isBindFullscreenBtn = false;
 let mousedownTimestamp = 0;
 let mousedownTimeout = null;
 let nextBtnEle = null;
 let isExecutingNext = false;
 let isExecutingTimeupdate = false;
 
-const NextType = {
+const BindType = {
     Manual: 'manual',
     Auto: 'auto',
     Unbind: 'unbind'
@@ -56,19 +57,25 @@ function isInput(e) {
     return formElements.includes(e.target.tagName);
 }
 
-async function getFullscreenBtnEle() {
+async function getFullscreenBtnEle(isAuto) {
     const classNames = {
         'v.qq.com': '.txp_btn_fullscreen',
-        // 'www.bilibili.com': '.squirtle-video-next',
         'www.iqiyi.com': '.screen-small',
         'v.youku.com': '.kui-fullscreen-icon-0'
     };
 
+    const currentWebsiteData = await getCurrentWebsiteData();
+
     const hostName = await getHostName();
 
-    if (!classNames[hostName]) return null;
+    if (isAuto) {
+        return document.querySelector(classNames[hostName] || null);
+    }
 
-    return document.querySelector(classNames[hostName]);
+    return document.querySelector(
+        !('fullscreenBtn' in currentWebsiteData) && classNames[hostName]
+        || currentWebsiteData.fullscreenBtn || null
+    );
 }
 
 async function autoNext() {
@@ -114,9 +121,9 @@ async function handleTimeupdateEvent() {
         if (isStart && startTime) {
             videoEle.currentTime = startTime;
         }
-        const { nextBtnType = NextType.Manual } = await getCurrentWebsiteData();
-        const isManualNext = nextBtnType === NextType.Manual;
-        const isAutoNext = nextBtnType === NextType.Auto;
+        const { nextBtnType = BindType.Manual } = await getCurrentWebsiteData();
+        const isManualNext = nextBtnType === BindType.Manual;
+        const isAutoNext = nextBtnType === BindType.Auto;
 
         if (isEnd && !isExecutingNext && isManualNext) {
             isExecutingNext = true;
@@ -251,19 +258,53 @@ async function speedUp() {
     }
 }
 
-async function fullscreen(e) {
-    const shouldFullscreen = await needFullscreen();
-    if (e.keyCode === 70 && !isInput(e) && shouldFullscreen) {
-        e.stopImmediatePropagation();
-        const fullscreenEle = await getFullscreenBtnEle();
+async function iframeSendFullscreenCommand() {
+    const currentWebsiteData = await getCurrentWebsiteData();
 
-        if (fullscreenEle) {
-            fullscreenEle.click();
-        } else {
-            if (!document.fullscreenElement) {
-                videoEle.requestFullscreen();
-              } else if (document.exitFullscreen) {
-                document.exitFullscreen();
+    if (currentWebsiteData.fullscreenBtn) {
+        const origin = await getOrigin();
+
+        window.top.postMessage("chromeExtensionTriggerFullscreenBtn", origin);
+    }
+}
+
+async function fullscreen(e) {
+    if (e.keyCode === 70 && !isInput(e)) {
+        const { fullscreenBtnType = BindType.Auto } = await getCurrentWebsiteData();
+        const isManual = fullscreenBtnType === BindType.Manual;
+        const isAuto = fullscreenBtnType === BindType.Auto;
+        const isUnbind = fullscreenBtnType === BindType.Unbind;
+        if (isUnbind) return;
+
+        const shouldFullscreen = await needFullscreen();
+        if (!shouldFullscreen) return;
+
+        if (isManual) {
+            const fullscreenEle = await getFullscreenBtnEle();
+
+            if (fullscreenEle) {
+                e.stopImmediatePropagation();
+                fullscreenEle.click();
+                return;
+            }
+    
+            if (!fullscreenEle && isIframe()) {
+                iframeSendFullscreenCommand();
+            }
+        }
+
+        if (isAuto) {
+            e.stopImmediatePropagation();
+            const fullscreenEle = await getFullscreenBtnEle(true);
+
+            if (fullscreenEle) {
+                fullscreenEle.click();
+            } else {
+                if (!document.fullscreenElement) {
+                    videoEle.requestFullscreen();
+                  } else if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
             }
         }
     }
@@ -294,9 +335,9 @@ async function handleNextShortcut(e) {
     const { isNextShortcut = true } = await chrome.storage.local.get(["isNextShortcut"]);
     if (!isNextShortcut) return;
 
-    const { nextBtnType = NextType.Manual } = await getCurrentWebsiteData();
-    const isManualNext = nextBtnType === NextType.Manual;
-    const isAutoNext = nextBtnType === NextType.Auto;
+    const { nextBtnType = BindType.Manual } = await getCurrentWebsiteData();
+    const isManualNext = nextBtnType === BindType.Manual;
+    const isAutoNext = nextBtnType === BindType.Auto;
 
     if (e.key === 'Alt' && isAutoNext) {
         autoNext();
@@ -318,6 +359,11 @@ async function handleNextShortcut(e) {
 async function clickNextBtn() {
     nextBtnEle = await getNextBtnEle();
     nextBtnEle && nextBtnEle.click();
+}
+
+async function clickFullscreenBtn() {
+    fullscreenBtnEle = await getFullscreenBtnEle();
+    fullscreenBtnEle && fullscreenBtnEle.click();
 }
 
 async function addNextShortcut() {
@@ -360,19 +406,31 @@ async function setCurrentWebsiteData(newValues) {
     }
 }
 
-function saveNextBtnInfo(e) {
+function saveBindBtnInfo(e) {
     const btnEle = findValidElement(e.target);
-    const nextBtnInfo = uniqueSelector(btnEle);
+    const btnInfo = uniqueSelector(btnEle);
 
-    setCurrentWebsiteData({nextBtn: nextBtnInfo, nextBtnType: NextType.Manual})
+    if (isBindNextBtn) {
+        setCurrentWebsiteData({
+            nextBtn: btnInfo,
+            nextBtnType: BindType.Manual
+        })
+    }
+
+    if (isBindFullscreenBtn) {
+        setCurrentWebsiteData({
+            fullscreenBtn: btnInfo,
+            fullscreenBtnType: BindType.Manual
+        })
+    }
 }
 
-function successSaveNextBtn(text) {
+function successSaveBtn(text) {
     const alertEle = document.querySelector('#chrome-extension-tencent-video');
     if (alertEle) {
         alertEle.innerHTML =
         `
-            <div style="display: flex; justify-content: center; align-items: center; position: fixed; color: #333; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 20px 0px; background: #fff; z-index: 9999; top: 5%; margin-left: 50%; transform: translate(-50%, 0);">
+            <div style="font-size: 14px; display: flex; justify-content: center; align-items: center; position: fixed; color: #333; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 20px 0px; background: #fff; z-index: 9999; top: 5%; margin-left: 50%; transform: translate(-50%, 0);">
                 <svg style="margin-right: 5px;" width="22" height="22" t="1718264268279" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4668"><path d="M512 53.248c129.707008 3.412992 237.739008 48.299008 324.096 134.656S967.339008 382.292992 970.752 512c-3.412992 129.707008-48.299008 237.739008-134.656 324.096S641.707008 967.339008 512 970.752c-129.707008-3.412992-237.739008-48.299008-324.096-134.656S56.660992 641.707008 53.248 512c3.412992-129.707008 48.299008-237.739008 134.656-324.096S382.292992 56.660992 512 53.248z m-57.344 548.864l-101.376-101.376c-8.192-7.508992-17.579008-11.264-28.16-11.264-10.580992 0-19.796992 3.924992-27.648 11.776-7.851008 7.851008-11.776 16.896-11.776 27.136s3.755008 19.456 11.264 27.648l130.048 130.048c7.508992 7.508992 16.724992 11.264 27.648 11.264 10.923008 0 20.139008-3.755008 27.648-11.264l269.312-269.312c10.24-10.24 13.483008-22.699008 9.728-37.376-3.755008-14.676992-12.971008-23.892992-27.648-27.648-14.676992-3.755008-27.136-0.512-37.376 9.728L454.656 602.112z" p-id="4669" fill="#0cb11d"></path></svg>
                 <span style="color: #333;">${text ? text : '绑定成功！可在设置中进行修改。'}</span>
             </div>
@@ -383,51 +441,56 @@ function successSaveNextBtn(text) {
     }
 }
 
-function addNextBtnMousedown(e) {
-    if (!isAddNextBtn) return;
+function bindBtnMousedown(e) {
+    if (!isBindNextBtn && !isBindFullscreenBtn) return;
 
     mousedownTimestamp = Date.now();
 
     mousedownTimeout = setTimeout(async () => {
-        saveNextBtnInfo(e);
-        if (isIframe) {
+        saveBindBtnInfo(e);
+        if (isIframe()) {
             const origin = await getOrigin();
-            window.top.postMessage("chromeExtensionSuccessSaveNextBtn", origin);
+            window.top.postMessage("chromeExtensionSuccessBindBtn", origin);
         } else {
-            successSaveNextBtn();
+            successSaveBtn();
         }
     }, 3000);
 }
 
-function addNextBtnMouseup() {
-    if (!isAddNextBtn) return;
+function bindBtnMouseup() {
+    if (!isBindNextBtn && !isBindFullscreenBtn) return;
 
-    const isFailToAddNextBtn = (Date.now() -  mousedownTimestamp) / 1000 < 5;
+    const isFailToAddNextBtn = (Date.now() -  mousedownTimestamp) / 1000 < 3;
     if (isFailToAddNextBtn) clearTimeout(mousedownTimeout);
 }
 
-function removeAddNextBtnEventListener() {
-    window.removeEventListener('mousedown', addNextBtnMousedown, true);
-    window.removeEventListener('mouseup', addNextBtnMouseup, true);
+function removeBindBtnEventListener() {
+    window.removeEventListener('mousedown', bindBtnMousedown, true);
+    window.removeEventListener('mouseup', bindBtnMouseup, true);
 }
 
 function removeAlertEle() {
     const alertEle = document.querySelector('#chrome-extension-tencent-video');
     alertEle && alertEle.remove();
-    isAddNextBtn = false;
-    removeAddNextBtnEventListener();
+    isBindNextBtn = false;
+    isBindFullscreenBtn = false;
+    removeBindBtnEventListener();
 }
 
 function addIframeMessageEventListener () {
     if (isIframe()) return;
 
     window.addEventListener('message', function(event) {
-        if (event.data === 'chromeExtensionSuccessSaveNextBtn') {
-            successSaveNextBtn();
+        if (event.data === 'chromeExtensionSuccessBindBtn') {
+            successSaveBtn();
         }
 
         if (event.data === 'chromeExtensionTriggerNextBtn') {
             clickNextBtn();
+        }
+
+        if (event.data === 'chromeExtensionTriggerFullscreenBtn') {
+            clickFullscreenBtn();
         }
 
         if (event.data === 'chromeExtensionAutoNextVideo') {
@@ -436,9 +499,52 @@ function addIframeMessageEventListener () {
     });
 }
 
-function autoSelect() {
-    setCurrentWebsiteData({nextBtnType: NextType.Auto});
-    successSaveNextBtn('自动绑定成功，如不生效、或出现异常，可在设置中解除绑定。');
+function autoSelectNextBtn() {
+    setCurrentWebsiteData({nextBtnType: BindType.Auto});
+    successSaveBtn('自动绑定成功，如不生效、或出现异常，可在设置中解除绑定。');
+}
+
+function autoSelectFullscreenBtn() {
+    setCurrentWebsiteData({fullscreenBtnType: BindType.Auto});
+    successSaveBtn();
+}
+
+function handleBindFullscreenMessage(message) {
+    if (message !== "selectFullscreenBtn") return;
+    const isAlertEleExist = document.querySelector('#chrome-extension-tencent-video');
+    if (isAlertEleExist) return;
+
+    isBindFullscreenBtn = true;
+    if (!isIframe()) {
+        const ele = document.querySelector('body');
+        const newDiv = document.createElement('div');
+        newDiv.id = "chrome-extension-tencent-video";
+        newDiv.innerHTML =
+        `
+            <div style="font-size: 14px; display: flex; justify-content: center; align-items: center; position: fixed; color: #333; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 20px 0px; background: #fff; z-index: 9999; top: 5%; margin-left: 50%; transform: translate(-50%, 0); white-space: nowrap;">
+                <svg style="margin-right: 5px;" width="22" height="22" t="1718262072377" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3543"><path d="M512.001 928.997c230.524 0 418.076-187.552 418.075-418.077 0-230.527-187.552-418.077-418.075-418.077s-418.077 187.55-418.077 418.077c0 230.525 187.552 418.077 418.077 418.077zM512 301.88c28.86 0 52.26 23.399 52.26 52.263 0 28.858-23.399 52.257-52.26 52.257s-52.26-23.399-52.26-52.257c0-28.863 23.399-52.263 52.26-52.263zM459.74 510.922c0-28.86 23.399-52.26 52.26-52.26s52.26 23.399 52.26 52.26l0 156.775c0 28.86-23.399 52.26-52.26 52.26s-52.26-23.399-52.26-52.26l0-156.775z"  fill="rgb(250, 173, 20)" p-id="3544"></path></svg>
+                <span style="color: #333;">长按全屏图标</span>
+                <svg style="margin: 0 5px;" t="1719604793180" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4294" width="22" height="22"><path d="M213.333333 213.333333h213.333334V128H170.666667a42.666667 42.666667 0 0 0-42.666667 42.666667v256h85.333333V213.333333zM170.666667 896h256v-85.333333H213.333333v-213.333334H128v256a42.666667 42.666667 0 0 0 42.666667 42.666667z m725.333333-42.666667v-256h-85.333333v213.333334h-213.333334v85.333333h256a42.666667 42.666667 0 0 0 42.666667-42.666667zM597.333333 213.333333h213.333334v213.333334h85.333333V170.666667a42.666667 42.666667 0 0 0-42.666667-42.666667h-256v85.333333z" fill="#515151" p-id="4295"></path></svg>
+                <span style="color: #333;">3 秒即可绑定成功。找不到全屏图标？可以使用
+                    <span id="chrome-extension-tencent-video-auto-select" style="color: #1d69d5; cursor: pointer; text-decoration: underline;">自动绑定</span>。
+                </span>
+                <span id="chrome-extension-tencent-video-cancel" style="color: red; cursor: pointer; margin-left: 10px">取消</span>
+            </div>
+        `;
+        ele.appendChild(newDiv);
+        const cancelEle = document.querySelector('#chrome-extension-tencent-video-cancel');
+        if (cancelEle) {
+            cancelEle.onclick = removeAlertEle;
+        }
+        const autoSelectEle = document.querySelector('#chrome-extension-tencent-video-auto-select');
+        if (autoSelectEle) {
+            autoSelectEle.onclick = autoSelectFullscreenBtn;
+        }
+    }
+
+    removeBindBtnEventListener();
+    window.addEventListener('mousedown', bindBtnMousedown, true);
+    window.addEventListener('mouseup', bindBtnMouseup, true);
 }
 
 function handleMessage() {
@@ -460,14 +566,14 @@ function handleMessage() {
                 const isAlertEleExist = document.querySelector('#chrome-extension-tencent-video');
                 if (isAlertEleExist) return true;
 
-                isAddNextBtn = true;
+                isBindNextBtn = true;
                 if (!isIframe()) {
                     const ele = document.querySelector('body');
                     const newDiv = document.createElement('div');
                     newDiv.id = "chrome-extension-tencent-video";
                     newDiv.innerHTML =
                     `
-                        <div style="display: flex; justify-content: center; align-items: center; position: fixed; color: #333; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 20px 0px; background: #fff; z-index: 9999; top: 5%; margin-left: 50%; transform: translate(-50%, 0); white-space: nowrap;">
+                        <div style="font-size: 14px; display: flex; justify-content: center; align-items: center; position: fixed; color: #333; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 20px 0px; background: #fff; z-index: 9999; top: 5%; margin-left: 50%; transform: translate(-50%, 0); white-space: nowrap;">
                             <svg style="margin-right: 5px;" width="22" height="22" t="1718262072377" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3543"><path d="M512.001 928.997c230.524 0 418.076-187.552 418.075-418.077 0-230.527-187.552-418.077-418.075-418.077s-418.077 187.55-418.077 418.077c0 230.525 187.552 418.077 418.077 418.077zM512 301.88c28.86 0 52.26 23.399 52.26 52.263 0 28.858-23.399 52.257-52.26 52.257s-52.26-23.399-52.26-52.257c0-28.863 23.399-52.263 52.26-52.263zM459.74 510.922c0-28.86 23.399-52.26 52.26-52.26s52.26 23.399 52.26 52.26l0 156.775c0 28.86-23.399 52.26-52.26 52.26s-52.26-23.399-52.26-52.26l0-156.775z"  fill="rgb(250, 173, 20)" p-id="3544"></path></svg>
                             <span style="color: #333;">长按下一集图标</span>
                             <svg style="margin: 0 5px;" t="1718260607361" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1507" width="15" height="15"><path d="M694.272 588.8L134.656 990.208c-58.88 41.984-107.008 14.336-107.008-61.952V96.256c0-76.288 48.128-103.936 107.008-61.44L694.272 435.2c58.88 42.496 58.88 111.616 0 153.6zM975.872 1009.664H819.2V14.336h156.672v995.328z" p-id="1508"></path></svg>
@@ -484,14 +590,17 @@ function handleMessage() {
                     }
                     const autoSelectEle = document.querySelector('#chrome-extension-tencent-video-auto-select');
                     if (autoSelectEle) {
-                        autoSelectEle.onclick = autoSelect;
+                        autoSelectEle.onclick = autoSelectNextBtn;
                     }
                 }
 
-                removeAddNextBtnEventListener();
-                window.addEventListener('mousedown', addNextBtnMousedown, true);
-                window.addEventListener('mouseup', addNextBtnMouseup, true);
+                removeBindBtnEventListener();
+                window.addEventListener('mousedown', bindBtnMousedown, true);
+                window.addEventListener('mouseup', bindBtnMouseup, true);
             }
+
+            handleBindFullscreenMessage(request.message)
+
            return true;
         }
     );
@@ -529,8 +638,8 @@ function addEvent() {
             sleep();
             fastForward();
             speedUp();
-            addFullscreenShortcut();
         }
+        addFullscreenShortcut();
         addNextShortcut();
     }, 1000);
     addIframeMessageEventListener();

@@ -153,12 +153,12 @@ input[type=number]::-webkit-outer-spin-button {
     height: 11px;
 }
 
-.bind-radios-wrapper {
+.radios-wrapper {
     margin-left: 33px;
     margin-top: 15px;
 }
 
-.bind-radios-wrapper .form-check {
+.radios-wrapper .form-check {
     margin-bottom: 4px
 }
 

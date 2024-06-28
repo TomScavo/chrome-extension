@@ -201,10 +201,10 @@
       <div>
         <div style="white-space: nowrap; font-weight: bold;">绑定下一集按钮：</div>
 
-        <div class="bind-radios-wrapper">
+        <div class="radios-wrapper">
           <div class="form-check">
-            <input class="form-check-input" type="radio" name="nextRadios" id="exampleRadios1" value="manual" checked>
-            <label for="exampleRadios1">
+            <input class="form-check-input" type="radio" name="nextRadios" id="nextRadios1" value="manual" checked>
+            <label for="nextRadios1">
               手动绑定
               <span id="unbind-text">
                 （推荐，<span id="click-here1" class="link">点击此处</span> 进行绑定）
@@ -217,9 +217,48 @@
             </span>
           </div>
           <div class="form-check">
-            <input class="form-check-input" type="radio" name="nextRadios" id="exampleRadios2" value="auto">
-            <label for="exampleRadios2" style="white-space: nowrap;">
+            <input class="form-check-input" type="radio" name="nextRadios" id="nextRadios2" value="auto">
+            <label for="nextRadios2" style="white-space: nowrap;">
               自动绑定（有概率失败，如不生效请解除绑定）
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="nextRadios" id="nextRadios3" value="unbind">
+            <label for="nextRadios3" style="white-space: nowrap;">
+              不绑定
+            </label>
+          </div>
+        </div>
+
+        <hr />
+
+        <div style="white-space: nowrap; font-weight: bold;">绑定全屏按钮（绑定后可按 F 键进入全屏）：</div>
+
+        <div class="radios-wrapper">
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="fullscreenRadios" id="fullscreenRadios1" value="manual">
+            <label for="fullscreenRadios1">
+              手动绑定
+              <span id="fullscreen-unbind-text">
+                （<span id="fullscreen-click-here" class="link">点击此处</span> 进行绑定）
+              </span>
+            </label>
+            <span id="fullscreen-bind-text" class="hide">
+              （已绑定）
+              <span id="fullscreen-rebind-btn" class="link" style="margin-left: 50px;">重新绑定</span>
+              <span id="fullscreen-delete-btn" class="text-danger" style="cursor: pointer; margin-left: 10px">删除</span>
+            </span>
+          </div>
+          <div class="form-check">
+            <input checked class="form-check-input" type="radio" name="fullscreenRadios" id="fullscreenRadios2" value="auto">
+            <label for="fullscreenRadios2" style="white-space: nowrap;">
+              自动绑定（适用于网站没有全屏按钮）
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="fullscreenRadios" id="fullscreenRadios3" value="unbind">
+            <label for="fullscreenRadios3" style="white-space: nowrap;">
+              不绑定
             </label>
           </div>
         </div>
