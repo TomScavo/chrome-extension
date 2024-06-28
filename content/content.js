@@ -9,6 +9,12 @@ let nextBtnEle = null;
 let isExecutingNext = false;
 let isExecutingTimeupdate = false;
 
+const NextType = {
+    Manual: 'manual',
+    Auto: 'auto',
+    Unbind: 'unbind'
+}
+
 async function getCurrentWebsiteData() {
     const { data = {} } = await chrome.storage.local.get(["data"]);
     
@@ -108,9 +114,11 @@ async function handleTimeupdateEvent() {
         if (isStart && startTime) {
             videoEle.currentTime = startTime;
         }
-        const { isAutoNext } = await getCurrentWebsiteData();
+        const { nextBtnType = NextType.Manual } = await getCurrentWebsiteData();
+        const isManualNext = nextBtnType === NextType.Manual;
+        const isAutoNext = nextBtnType === NextType.Auto;
 
-        if (isEnd && !isExecutingNext && !isAutoNext) {
+        if (isEnd && !isExecutingNext && isManualNext) {
             isExecutingNext = true;
             nextBtnEle = await getNextBtnEle();
             if (nextBtnEle) {
@@ -286,7 +294,9 @@ async function handleNextShortcut(e) {
     const { isNextShortcut = true } = await chrome.storage.local.get(["isNextShortcut"]);
     if (!isNextShortcut) return;
 
-    const { isAutoNext } = await getCurrentWebsiteData();
+    const { nextBtnType = NextType.Manual } = await getCurrentWebsiteData();
+    const isManualNext = nextBtnType === NextType.Manual;
+    const isAutoNext = nextBtnType === NextType.Auto;
 
     if (e.key === 'Alt' && isAutoNext) {
         autoNext();
@@ -295,12 +305,12 @@ async function handleNextShortcut(e) {
 
     nextBtnEle = await getNextBtnEle();
 
-    if (e.key === 'Alt' && nextBtnEle) {
+    if (e.key === 'Alt' && isManualNext && nextBtnEle) {
         nextBtnEle.click();
         return;
     }
 
-    if (e.key === 'Alt' && !isAutoNext && !nextBtnEle) {
+    if (e.key === 'Alt' && isManualNext && !nextBtnEle) {
         iframeSendNextCommand();
     }
 }
@@ -354,7 +364,7 @@ function saveNextBtnInfo(e) {
     const btnEle = findValidElement(e.target);
     const nextBtnInfo = uniqueSelector(btnEle);
 
-    setCurrentWebsiteData({nextBtn: nextBtnInfo, isAutoNext: false})
+    setCurrentWebsiteData({nextBtn: nextBtnInfo, nextBtnType: NextType.Manual})
 }
 
 function successSaveNextBtn(text) {
@@ -427,7 +437,7 @@ function addIframeMessageEventListener () {
 }
 
 function autoSelect() {
-    setCurrentWebsiteData({isAutoNext: true});
+    setCurrentWebsiteData({nextBtnType: NextType.Auto});
     successSaveNextBtn('自动绑定成功，如不生效、或出现异常，可在设置中解除绑定。');
 }
 

@@ -30,9 +30,28 @@ export async function setCurrentWebsiteData(hostName, newValues) {
     }
 }
 
+export async function deleteCurrentWebsiteData(hostName, name) {
+    try {
+        const { data = {} } = await chrome.storage.local.get(["data"]);
+
+        if (hostName) {
+            const currentWebsiteData = data[hostName] || {};
+            delete currentWebsiteData[name];
+            const newData = {
+                ...data,
+                [hostName]: {
+                    ...currentWebsiteData
+                }
+            }
+            setValue('data', newData);
+        }
+    } catch (e) {
+    }
+}
+
 export async function getCurrentWebsiteData(hostName) {
     const { data = {} } = await chrome.storage.local.get(["data"]);
-
+    
     return data[hostName] || {};
 }
 
