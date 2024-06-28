@@ -19,9 +19,19 @@ body {
     height: 25px;
 }
 
+.fav-icon-wrapper {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 0;
+    left: 0;
+    height: 93px;
+    width: 100px;
+}
+
 #fav-icon {
     position: absolute;
-    top: 30px;
     height: 58px;
 }
 
