@@ -29,7 +29,8 @@ function isYouTuBeShorts() {
 async function needFullscreen() {
     const whiteList = [
         'www.bilibili.com',
-        'www.youtube.com'
+        'www.youtube.com',
+        'www.iqiyi.com'
     ]
 
     const hostName = await getHostName();
