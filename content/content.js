@@ -60,7 +60,6 @@ function isInput(e) {
 async function getFullscreenBtnEle(isAuto) {
     const classNames = {
         'v.qq.com': '.txp_btn_fullscreen',
-        'www.iqiyi.com': '.screen-small',
         'v.youku.com': '.kui-fullscreen-icon-0'
     };
 

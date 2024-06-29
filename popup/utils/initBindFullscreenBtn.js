@@ -4,7 +4,7 @@ import {
     getCurrentWebsiteData,
 } from './index.js';
 
-const whiteList = ['www.bilibili.com', 'v.qq.com', 'www.iqiyi.com', 'v.youku.com'];
+const whiteList = ['v.qq.com', 'v.youku.com'];
 
 const clickHereEle = document.querySelector('#fullscreen-click-here');
 const rebindFullscreenBtnEle = document.querySelector('#fullscreen-rebind-btn');

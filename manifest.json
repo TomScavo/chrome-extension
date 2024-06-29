@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "腾讯视频 - 下一集快捷键、跳过片头片尾",
     "description": "支持所有平台。下一集快捷键、自定义跳过片头片尾等功能。",
-    "version": "5.3",
+    "version": "5.4",
     "permissions": [
       "storage",
       "tabs"
