@@ -66,6 +66,7 @@ async function handleSaveIconClicked() {
     }
     saveVideoWrapperEle.classList.remove('hide');
     videoListWrapperEle.classList.add('hide');
+    videoNameInputEle.focus();
 }
 
 async function deleteSelectedVideo() {
