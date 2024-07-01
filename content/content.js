@@ -9,6 +9,9 @@ let mousedownTimeout = null;
 let nextBtnEle = null;
 let isExecutingNext = false;
 let isExecutingTimeupdate = false;
+let mouseMoveTimer = null;
+let removeAlertEleTimer = null;
+let keysPressed = {};
 
 const BindType = {
     Manual: 'manual',
@@ -267,8 +270,23 @@ async function iframeSendFullscreenCommand() {
     }
 }
 
+function checkIsMultipleKeysPressed() {
+    window.addEventListener('keydown', e => {keysPressed[e.key] = true;});
+    window.addEventListener('keyup', e => {delete keysPressed[e.key];});
+}
+
+function IsMultipleKeysPressed(currentKey = '') {
+    const keys = Object.keys(keysPressed);
+    keysPressed = {};
+    if (!currentKey) {
+        return keys.length > 1;
+    } else {
+        return !!keys.filter(key => key !== currentKey).length;
+    }
+}
+
 async function fullscreen(e) {
-    if (e.keyCode === 70 && !isInput(e)) {
+    if (e.keyCode === 70 && !isInput(e) && !IsMultipleKeysPressed(e.key)) {
         const { fullscreenBtnType = BindType.Auto } = await getCurrentWebsiteData();
         const isManual = fullscreenBtnType === BindType.Manual;
         const isAuto = fullscreenBtnType === BindType.Auto;
@@ -378,7 +396,8 @@ function handleIsYouTube() {
 }
 
 function findValidElement(element) {
-    if (['svg', 'path'].includes(element.nodeName.toLowerCase())) {
+    const isSVG = !!element.closest('svg')
+    if (isSVG) {
         return findValidElement(element.parentElement);
     }
 
@@ -425,6 +444,8 @@ function saveBindBtnInfo(e) {
 }
 
 function successSaveBtn(text) {
+    removeBindDataAndEvents();
+
     const alertEle = document.querySelector('#chrome-extension-tencent-video');
     if (alertEle) {
         alertEle.innerHTML =
@@ -434,9 +455,20 @@ function successSaveBtn(text) {
                 <span style="color: #333;">${text ? text : '绑定成功！可在设置中进行修改。'}</span>
             </div>
         `;
-        setTimeout(() => {
+        removeAlertEleTimer = setTimeout(() => {
             removeAlertEle();
-        }, 10000);
+        }, 8000);
+    }
+}
+
+async function bindBtn(e) {
+    saveBindBtnInfo(e);
+
+    if (isIframe()) {
+        const origin = await getOrigin();
+        window.top.postMessage("chromeExtensionSuccessBindBtn", origin);
+    } else {
+        successSaveBtn();
     }
 }
 
@@ -446,34 +478,39 @@ function bindBtnMousedown(e) {
     mousedownTimestamp = Date.now();
 
     mousedownTimeout = setTimeout(async () => {
-        saveBindBtnInfo(e);
-        if (isIframe()) {
-            const origin = await getOrigin();
-            window.top.postMessage("chromeExtensionSuccessBindBtn", origin);
-        } else {
-            successSaveBtn();
-        }
-    }, 3000);
+        bindBtn(e);
+    }, 2000);
 }
 
-function bindBtnMouseup() {
+function bindBtnMouseup(e) {
     if (!isBindNextBtn && !isBindFullscreenBtn) return;
-
     const isFailToAddNextBtn = (Date.now() -  mousedownTimestamp) / 1000 < 3;
     if (isFailToAddNextBtn) clearTimeout(mousedownTimeout);
 }
 
 function removeBindBtnEventListener() {
+    clearTimeout(mouseMoveTimer);
     window.removeEventListener('mousedown', bindBtnMousedown, true);
     window.removeEventListener('mouseup', bindBtnMouseup, true);
+    window.removeEventListener('mousemove', mouseMove);
+}
+
+function removeBindDataAndEvents() {
+    isBindNextBtn = false;
+    isBindFullscreenBtn = false;
+    removeBindBtnEventListener();
 }
 
 function removeAlertEle() {
     const alertEle = document.querySelector('#chrome-extension-tencent-video');
     alertEle && alertEle.remove();
-    isBindNextBtn = false;
-    isBindFullscreenBtn = false;
-    removeBindBtnEventListener();
+}
+
+function removeBind() {
+    clearTimeout(removeAlertEleTimer);
+
+    removeAlertEle();
+    removeBindDataAndEvents();
 }
 
 function addIframeMessageEventListener () {
@@ -508,10 +545,24 @@ function autoSelectFullscreenBtn() {
     successSaveBtn();
 }
 
+function mouseMove(e) {
+    clearTimeout(mouseMoveTimer);
+
+    mouseMoveTimer = setTimeout(() => {
+        bindBtn(e);
+    }, 5000);
+}
+
+function bindBtnEvents() {
+    removeBindBtnEventListener();
+    window.addEventListener('mousedown', bindBtnMousedown, true);
+    window.addEventListener('mouseup', bindBtnMouseup, true);
+    window.addEventListener('mousemove', mouseMove);
+}
+
 function handleBindFullscreenMessage(message) {
     if (message !== "selectFullscreenBtn") return;
-    const isAlertEleExist = document.querySelector('#chrome-extension-tencent-video');
-    if (isAlertEleExist) return;
+    removeBind();
 
     isBindFullscreenBtn = true;
     if (!isIframe()) {
@@ -524,7 +575,7 @@ function handleBindFullscreenMessage(message) {
                 <svg style="margin-right: 5px;" width="22" height="22" t="1718262072377" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3543"><path d="M512.001 928.997c230.524 0 418.076-187.552 418.075-418.077 0-230.527-187.552-418.077-418.075-418.077s-418.077 187.55-418.077 418.077c0 230.525 187.552 418.077 418.077 418.077zM512 301.88c28.86 0 52.26 23.399 52.26 52.263 0 28.858-23.399 52.257-52.26 52.257s-52.26-23.399-52.26-52.257c0-28.863 23.399-52.263 52.26-52.263zM459.74 510.922c0-28.86 23.399-52.26 52.26-52.26s52.26 23.399 52.26 52.26l0 156.775c0 28.86-23.399 52.26-52.26 52.26s-52.26-23.399-52.26-52.26l0-156.775z"  fill="rgb(250, 173, 20)" p-id="3544"></path></svg>
                 <span style="color: #333;">长按全屏图标</span>
                 <svg style="margin: 0 5px;" t="1719604793180" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4294" width="22" height="22"><path d="M213.333333 213.333333h213.333334V128H170.666667a42.666667 42.666667 0 0 0-42.666667 42.666667v256h85.333333V213.333333zM170.666667 896h256v-85.333333H213.333333v-213.333334H128v256a42.666667 42.666667 0 0 0 42.666667 42.666667z m725.333333-42.666667v-256h-85.333333v213.333334h-213.333334v85.333333h256a42.666667 42.666667 0 0 0 42.666667-42.666667zM597.333333 213.333333h213.333334v213.333334h85.333333V170.666667a42.666667 42.666667 0 0 0-42.666667-42.666667h-256v85.333333z" fill="#515151" p-id="4295"></path></svg>
-                <span style="color: #333;">3 秒即可绑定成功。找不到全屏图标？可以使用
+                <span style="color: #333;">2 秒、或悬停 5 秒即可绑定成功。找不到全屏图标？可以使用
                     <span id="chrome-extension-tencent-video-auto-select" style="color: #1d69d5; cursor: pointer; text-decoration: underline;">自动绑定</span>。
                 </span>
                 <span id="chrome-extension-tencent-video-cancel" style="color: red; cursor: pointer; margin-left: 10px">取消</span>
@@ -533,7 +584,7 @@ function handleBindFullscreenMessage(message) {
         ele.appendChild(newDiv);
         const cancelEle = document.querySelector('#chrome-extension-tencent-video-cancel');
         if (cancelEle) {
-            cancelEle.onclick = removeAlertEle;
+            cancelEle.onclick = removeBind;
         }
         const autoSelectEle = document.querySelector('#chrome-extension-tencent-video-auto-select');
         if (autoSelectEle) {
@@ -541,9 +592,7 @@ function handleBindFullscreenMessage(message) {
         }
     }
 
-    removeBindBtnEventListener();
-    window.addEventListener('mousedown', bindBtnMousedown, true);
-    window.addEventListener('mouseup', bindBtnMouseup, true);
+    bindBtnEvents();
 }
 
 function handleMessage() {
@@ -562,8 +611,7 @@ function handleMessage() {
             }
 
             if (request.message === "selectNextBtn") {
-                const isAlertEleExist = document.querySelector('#chrome-extension-tencent-video');
-                if (isAlertEleExist) return true;
+                removeBind();
 
                 isBindNextBtn = true;
                 if (!isIframe()) {
@@ -576,7 +624,7 @@ function handleMessage() {
                             <svg style="margin-right: 5px;" width="22" height="22" t="1718262072377" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3543"><path d="M512.001 928.997c230.524 0 418.076-187.552 418.075-418.077 0-230.527-187.552-418.077-418.075-418.077s-418.077 187.55-418.077 418.077c0 230.525 187.552 418.077 418.077 418.077zM512 301.88c28.86 0 52.26 23.399 52.26 52.263 0 28.858-23.399 52.257-52.26 52.257s-52.26-23.399-52.26-52.257c0-28.863 23.399-52.263 52.26-52.263zM459.74 510.922c0-28.86 23.399-52.26 52.26-52.26s52.26 23.399 52.26 52.26l0 156.775c0 28.86-23.399 52.26-52.26 52.26s-52.26-23.399-52.26-52.26l0-156.775z"  fill="rgb(250, 173, 20)" p-id="3544"></path></svg>
                             <span style="color: #333;">长按下一集图标</span>
                             <svg style="margin: 0 5px;" t="1718260607361" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1507" width="15" height="15"><path d="M694.272 588.8L134.656 990.208c-58.88 41.984-107.008 14.336-107.008-61.952V96.256c0-76.288 48.128-103.936 107.008-61.44L694.272 435.2c58.88 42.496 58.88 111.616 0 153.6zM975.872 1009.664H819.2V14.336h156.672v995.328z" p-id="1508"></path></svg>
-                            <span style="color: #333;">3 秒即可绑定成功。找不到下一集图标？可以使用
+                            <span style="color: #333;">2 秒、或悬停 5 秒即可绑定成功。找不到下一集图标？可以使用
                                 <span id="chrome-extension-tencent-video-auto-select" style="color: #1d69d5; cursor: pointer; text-decoration: underline;">自动绑定</span>。
                             </span>
                             <span id="chrome-extension-tencent-video-cancel" style="color: red; cursor: pointer; margin-left: 10px">取消</span>
@@ -585,17 +633,15 @@ function handleMessage() {
                     ele.appendChild(newDiv);
                     const cancelEle = document.querySelector('#chrome-extension-tencent-video-cancel');
                     if (cancelEle) {
-                        cancelEle.onclick = removeAlertEle;
+                        cancelEle.onclick = removeBind;
                     }
                     const autoSelectEle = document.querySelector('#chrome-extension-tencent-video-auto-select');
                     if (autoSelectEle) {
                         autoSelectEle.onclick = autoSelectNextBtn;
                     }
                 }
-
-                removeBindBtnEventListener();
-                window.addEventListener('mousedown', bindBtnMousedown, true);
-                window.addEventListener('mouseup', bindBtnMouseup, true);
+                
+                bindBtnEvents();
             }
 
             handleBindFullscreenMessage(request.message)
@@ -622,6 +668,7 @@ function setUrl() {
 }
 
 function addEvent() {
+    checkIsMultipleKeysPressed();
     if (isYouTuBe){
         handleIsYouTube();
     }

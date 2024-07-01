@@ -199,9 +199,13 @@ function getAllSelectors( el, selectors, attributesToIgnore )
  */
 function testUniqueness( element, selector )
 {
-  const { parentNode } = element;
-  const elements = parentNode.querySelectorAll( selector );
-  return elements.length === 1 && elements[ 0 ] === element;
+  try {
+    const { parentNode } = element;
+    const elements = parentNode.querySelectorAll( selector );
+    return elements.length === 1 && elements[ 0 ] === element;
+  } catch(e) {
+    return false
+  }
 }
 
 /**
