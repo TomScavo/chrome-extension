@@ -193,11 +193,12 @@ function checkNextBtnInfo() {
         const { data = {} } = await chrome.storage.local.get(["data"]);
         const hostName = getHostName(activeTab.url);
         const websiteData = data[hostName] || {};
+        const isAutoNext = websiteData.nextBtnType === "auto"
 
         if (
             websiteData.nextBtn
             || (whiteList.includes(hostName) && !('nextBtn' in websiteData))
-            || websiteData.isAutoNext
+            || isAutoNext
         ) {
             endInputsEle.classList.remove("hide");
             nextShortcutCheckboxWrapperEle.classList.remove("hide");
