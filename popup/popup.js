@@ -145,6 +145,16 @@ async function initFastForwardForm() {
     fastForwardSecondEle.onchange = handleFastForwardSecondChange;
 }
 
+async function initLoopForm() {
+    const { isLoop = false } = await chrome.storage.local.get(["speed", "isLoop"]);
+    loopCheckboxEle.checked = isLoop;
+
+    loopCheckboxEle.onchange = (e) => {
+        const isLoop = e.currentTarget.checked;
+        setValue('isLoop', isLoop);
+    }
+}
+
 async function initSpeedUpForm() {
     const { speed = 1, isSpeedUp = false } = await chrome.storage.local.get(["speed", "isSpeedUp"]);
     speedUpCheckboxEle.checked = isSpeedUp;
@@ -282,6 +292,7 @@ function init() {
     initNextShortcut();
     initSleepForm();
     initFastForwardForm();
+    initLoopForm();
     initSpeedUpForm();
     initClickHere();
     initSaveVideo();

@@ -86,6 +86,26 @@ async function autoNext() {
     }
 }
 
+function handleLoop({startTime, endTime, isSkip}) {
+    let duration = videoEle.duration;
+    let currentTime = videoEle.currentTime;
+
+    const isInvalidStartTimeAndEndTime = startTime >= duration || endTime>= duration || startTime + endTime >= duration;
+    if (isInvalidStartTimeAndEndTime || !isSkip) {
+        let isEnd = duration - currentTime <= 1;
+        if (isEnd) {
+
+            videoEle.currentTime = 0;
+        }
+    } else {
+        let isEnd = duration - currentTime <= endTime;
+        if (isEnd) {
+
+            videoEle.currentTime = startTime;
+        }
+    }
+}
+
 async function handleTimeupdateEvent() {
     try {
         if (isExecutingTimeupdate) return;
@@ -93,9 +113,10 @@ async function handleTimeupdateEvent() {
         setTimeout(() => {
             isExecutingTimeupdate = false;
         }, 500)
-        const {startTime = 0, endTime = 0, isSkip = false} = (await chrome.storage.local.get(["startTime", "endTime", "isSkip"])) || { startTime: 0, endTime: 0 };
-        if (!isSkip) return;
         if (!videoEle || !videoEle.duration) return;
+        const {startTime = 0, endTime = 0, isSkip = false, isLoop = false} = (await chrome.storage.local.get(["startTime", "endTime", "isSkip", "isLoop"])) || { startTime: 0, endTime: 0 };
+        if (isLoop) handleLoop({startTime, endTime, isSkip});
+        if (!isSkip) return;
         let duration = videoEle.duration;
         if (startTime >= duration || endTime>= duration || startTime + endTime >= duration) return;
 
@@ -110,7 +131,7 @@ async function handleTimeupdateEvent() {
         const isManualNext = nextBtnType === BindType.Manual;
         const isAutoNext = nextBtnType === BindType.Auto;
 
-        if (isEnd && !isExecutingNext && isManualNext) {
+        if (isEnd && !isExecutingNext && isManualNext && !isLoop) {
             isExecutingNext = true;
             nextBtnEle = await getNextBtnEle();
             if (nextBtnEle) {
@@ -124,7 +145,7 @@ async function handleTimeupdateEvent() {
             }, 10000);
         }
 
-        if (isEnd && !isExecutingNext && isAutoNext) {
+        if (isEnd && !isExecutingNext && isAutoNext && !isLoop) {
             isExecutingNext = true;
             autoNext();
 
@@ -289,7 +310,7 @@ async function fullscreen(e) {
                 fullscreenEle.click();
             } else {
                 if (!document.fullscreenElement) {
-                    videoEle.requestFullscreen();
+                    videoEle && videoEle.requestFullscreen();
                   } else if (document.exitFullscreen) {
                     document.exitFullscreen();
                 }

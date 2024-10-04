@@ -111,6 +111,15 @@
 
       <div class="form-check form-switch">
         <div class="switch-wrapper" style="height: 31px;">
+          <div class="form-check-label label" for="checkbox">循环播放：</div>
+          <input id="loop-checkbox" class="form-check-input" type="checkbox">
+        </div>
+      </div>
+
+      <hr/>
+
+      <div class="form-check form-switch">
+        <div class="switch-wrapper" style="height: 31px;">
           <div class="form-check-label label" for="checkbox">下一集快捷键：</div>
 
           <div id="next-shortcut-checkbox-wrapper">
@@ -131,6 +140,21 @@
       <hr/>
 
       <div class="form-check form-switch">
+        <div class="switch-wrapper" style="height: 31px;">
+          <div class="form-check-label label" for="checkbox">单次快进时长：</div>
+          <input id="fast-forward-checkbox" class="form-check-input" type="checkbox">
+          <div style="width: 100px; margin-right: 20px">
+            <div style="margin-left: 20px; height: 30px" class="input-group input-group-sm mb-3">
+              <input id="fast-forward-second" style="height: 30px" name="endMinute" type="number" class="form-control" aria-label="Sizing example input">
+              <span class="input-group-text">秒</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr/>
+
+      <div class="form-check form-switch">
         <div class="switch-wrapper">
           <div class="form-check-label label" for="checkbox">睡眠定时：</div>
           <input id="sleep-checkbox" class="form-check-input" type="checkbox">
@@ -144,21 +168,6 @@
             <option value="120">120分钟</option>
           </select>
           <div id="sleep-timer" style="width: 55px; margin-right: 10px; line-height: 30px"></div>
-        </div>
-      </div>
-
-      <hr/>
-
-      <div class="form-check form-switch">
-        <div class="switch-wrapper" style="height: 31px;">
-          <div class="form-check-label label" for="checkbox">单次快进时长：</div>
-          <input id="fast-forward-checkbox" class="form-check-input" type="checkbox">
-          <div style="width: 100px; margin-right: 20px">
-            <div style="margin-left: 20px; height: 30px" class="input-group input-group-sm mb-3">
-              <input id="fast-forward-second" style="height: 30px" name="endMinute" type="number" class="form-control" aria-label="Sizing example input">
-              <span class="input-group-text">秒</span>
-            </div>
-          </div>
         </div>
       </div>
 
